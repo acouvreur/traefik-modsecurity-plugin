@@ -1,0 +1,9 @@
+displayName: Modsecurity Plugin
+type: middleware
+
+import: github.com/acouvreur/traefik-modsecurity-plugin
+
+summary: 'Traefik plugin to proxy requests to owasp/modsecurity-crs:apache'
+
+testData:
+  ModsecurityUrl: http://waf:80

@@ -1,0 +1,42 @@
+version: "3.7"
+
+services:
+  traefik:
+    image: traefik
+    ports:
+      - "8000:80"
+      - "8080:8080"
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --pilot.token=$TRAEFIK_PILOT_TOKEN
+      - --experimental.localPlugins.traefik-modsecurity-plugin.moduleName=github.com/acouvreur/traefik-modsecurity-plugin
+      - --providers.docker=true
+      - --entrypoints.http.address=:80
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '.:/plugins-local/src/github.com/acouvreur/traefik-modsecurity-plugin'
+    environment:
+      - TRAEFIK_PILOT_TOKEN
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.modSecurityUrl=http://waf:80
+
+  waf:
+    image: owasp/modsecurity-crs:apache
+    environment:
+      - PARANOIA=1
+      - ANOMALY_INBOUND=10
+      - ANOMALY_OUTBOUND=5
+      - BACKEND=http://dummy
+
+  dummy:
+    image: containous/whoami
+
+  website:
+    image: containous/whoami
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.website.rule=PathPrefix(`/website`)
+      - traefik.http.routers.website.middlewares=waf@docker
