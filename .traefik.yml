@@ -1,5 +1,6 @@
 displayName: Modsecurity Plugin
 type: middleware
+iconPath: ./img/owasp-modsec.png
 
 import: github.com/acouvreur/traefik-modsecurity-plugin
 
