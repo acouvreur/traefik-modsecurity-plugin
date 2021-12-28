@@ -47,6 +47,12 @@ func New(ctx context.Context, next http.Handler, config *Config, name string) (h
 
 func (a *Modsecurity) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
+	// Webscoket not supported
+	if isWebsocket(req) {
+		a.next.ServeHTTP(rw, req)
+		return
+	}
+
 	// we need to buffer the body if we want to read it here and send it
 	// in the request.
 	body, err := ioutil.ReadAll(req.Body)
@@ -83,4 +89,13 @@ func (a *Modsecurity) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	a.next.ServeHTTP(rw, req)
+}
+
+func isWebsocket(req *http.Request) bool {
+	for _, header := range req.Header["Upgrade"] {
+		if header == "websocket" {
+			return true
+		}
+	}
+	return false
 }
