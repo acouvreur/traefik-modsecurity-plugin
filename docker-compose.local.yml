@@ -10,12 +10,12 @@ services:
       - --api.dashboard=true
       - --api.insecure=true
       - --pilot.token=$TRAEFIK_PILOT_TOKEN
-      - --experimental.plugins.traefik-modsecurity-plugin.modulename=github.com/acouvreur/traefik-modsecurity-plugin
-      - --experimental.plugins.traefik-modsecurity-plugin.version=v1.0.1
+      - --experimental.localPlugins.traefik-modsecurity-plugin.moduleName=github.com/acouvreur/traefik-modsecurity-plugin
       - --providers.docker=true
       - --entrypoints.http.address=:80
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
+      - '.:/plugins-local/src/github.com/acouvreur/traefik-modsecurity-plugin'
     environment:
       - TRAEFIK_PILOT_TOKEN
     labels:
