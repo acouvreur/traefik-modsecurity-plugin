@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -84,7 +85,16 @@ func (a *Modsecurity) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		resp.Write(rw)
+		// copy headers
+		for k, vv := range resp.Header {
+			for _, v := range vv {
+				rw.Header().Set(k, v)
+			}
+		}
+		// copy status
+		rw.WriteHeader(resp.StatusCode)
+		// copy body
+		io.Copy(rw, resp.Body)
 		return
 	}
 
