@@ -85,16 +85,7 @@ func (a *Modsecurity) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		// copy headers
-		for k, vv := range resp.Header {
-			for _, v := range vv {
-				rw.Header().Set(k, v)
-			}
-		}
-		// copy status
-		rw.WriteHeader(resp.StatusCode)
-		// copy body
-		io.Copy(rw, resp.Body)
+		forwardResponse(resp, rw)
 		return
 	}
 
@@ -108,4 +99,17 @@ func isWebsocket(req *http.Request) bool {
 		}
 	}
 	return false
+}
+
+func forwardResponse(resp *http.Response, rw http.ResponseWriter) {
+	// copy headers
+	for k, vv := range resp.Header {
+		for _, v := range vv {
+			rw.Header().Set(k, v)
+		}
+	}
+	// copy status
+	rw.WriteHeader(resp.StatusCode)
+	// copy body
+	io.Copy(rw, resp.Body)
 }
