@@ -48,7 +48,7 @@ func New(ctx context.Context, next http.Handler, config *Config, name string) (h
 
 func (a *Modsecurity) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
-	// Webscoket not supported
+	// Websocket not supported
 	if isWebsocket(req) {
 		a.next.ServeHTTP(rw, req)
 		return
