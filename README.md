@@ -1,6 +1,6 @@
 # Traefik Modsecurity Plugin
 
-![Demo](./img/owasp-modsec.png)
+![Banner](./img/banner.png)
 
 Traefik plugin to proxy requests to [owasp/modsecurity-crs](https://hub.docker.com/r/owasp/modsecurity-crs):apache
 
