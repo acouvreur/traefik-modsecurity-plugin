@@ -70,6 +70,11 @@ func (a *Modsecurity) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	proxyReq, err := http.NewRequest(req.Method, url, bytes.NewReader(body))
 
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	// We may want to filter some headers, otherwise we could just use a shallow copy
 	// proxyReq.Header = req.Header
 	proxyReq.Header = make(http.Header)
