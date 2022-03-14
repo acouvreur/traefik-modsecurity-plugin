@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -31,6 +33,7 @@ type Modsecurity struct {
 	next           http.Handler
 	modSecurityUrl string
 	name           string
+	logger         *log.Logger
 }
 
 // New created a new Modsecurity plugin.
@@ -43,6 +46,7 @@ func New(ctx context.Context, next http.Handler, config *Config, name string) (h
 		modSecurityUrl: config.ModSecurityUrl,
 		next:           next,
 		name:           name,
+		logger:         log.New(os.Stdout, "", log.LstdFlags),
 	}, nil
 }
 
@@ -58,7 +62,8 @@ func (a *Modsecurity) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	// in the request.
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusInternalServerError)
+		a.logger.Printf("fail to read incoming request: %s", err.Error())
+		http.Error(rw, "", http.StatusBadGateway)
 		return
 	}
 
@@ -71,7 +76,8 @@ func (a *Modsecurity) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	proxyReq, err := http.NewRequest(req.Method, url, bytes.NewReader(body))
 
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
+		a.logger.Printf("fail to prepare forwarded request: %s", err.Error())
+		http.Error(rw, "", http.StatusBadGateway)
 		return
 	}
 
@@ -84,7 +90,8 @@ func (a *Modsecurity) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	resp, err := httpClient.Do(proxyReq)
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadGateway)
+		a.logger.Printf("fail to send HTTP request to modsec: %s", err.Error())
+		http.Error(rw, "", http.StatusBadGateway)
 		return
 	}
 	defer resp.Body.Close()
