@@ -76,6 +76,32 @@ func TestModsecurity_ServeHTTP(t *testing.T) {
 			expectBody:      "Response from service",
 			expectStatus:    200,
 		},
+		{
+			name: "Accept payloads smaller than limits",
+			request: http.Request{
+				Body: generateLargeBody(1024),
+			},
+			wafResponse: response{
+				StatusCode: 200,
+				Body:       "Response from waf",
+			},
+			serviceResponse: serviceResponse,
+			expectBody:      "Response from service",
+			expectStatus:    http.StatusOK,
+		},
+		{
+			name: "Reject too big payloads",
+			request: http.Request{
+				Body: generateLargeBody(1025),
+			},
+			wafResponse: response{
+				StatusCode: 200,
+				Body:       "Response from waf",
+			},
+			serviceResponse: serviceResponse,
+			expectBody:      "\n",
+			expectStatus:    http.StatusRequestEntityTooLarge,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -101,7 +127,9 @@ func TestModsecurity_ServeHTTP(t *testing.T) {
 			middleware := &Modsecurity{
 				next:           httpServiceHandler,
 				modSecurityUrl: modsecurityMockServer.URL,
+				maxBodySize:    1024,
 				name:           "modsecurity-middleware",
+				logger:         log.New(io.Discard, "", log.LstdFlags),
 			}
 
 			rw := httptest.NewRecorder()
@@ -115,4 +143,9 @@ func TestModsecurity_ServeHTTP(t *testing.T) {
 			assert.Equal(t, tt.expectStatus, resp.StatusCode)
 		})
 	}
+}
+
+func generateLargeBody(size int) io.ReadCloser {
+	var str = make([]byte, size)
+	return io.NopCloser(bytes.NewReader(str))
 }
