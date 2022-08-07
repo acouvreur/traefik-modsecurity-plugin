@@ -21,6 +21,7 @@ var httpClient = &http.Client{
 // Config the plugin configuration.
 type Config struct {
 	ModSecurityUrl string `json:"modSecurityUrl,omitempty"`
+	MaxBodySize    int64  `json:"maxBodySize,omitempty"`
 }
 
 // CreateConfig creates the default plugin configuration.
@@ -32,6 +33,7 @@ func CreateConfig() *Config {
 type Modsecurity struct {
 	next           http.Handler
 	modSecurityUrl string
+	maxBodySize    int64
 	name           string
 	logger         *log.Logger
 }
@@ -40,6 +42,13 @@ type Modsecurity struct {
 func New(ctx context.Context, next http.Handler, config *Config, name string) (http.Handler, error) {
 	if len(config.ModSecurityUrl) == 0 {
 		return nil, fmt.Errorf("modSecurityUrl cannot be empty")
+	}
+
+	// Safe default: if the max body size was not specified, use 10MB
+	// Note that this will break any file upload with files > 10MB. Hopefully
+	// the user will configure this parameter during the installation.
+	if config.MaxBodySize == 0 {
+		config.MaxBodySize = 10 * 1024 * 1024
 	}
 
 	return &Modsecurity{
@@ -60,10 +69,15 @@ func (a *Modsecurity) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	// we need to buffer the body if we want to read it here and send it
 	// in the request.
-	body, err := ioutil.ReadAll(req.Body)
+	body, err := ioutil.ReadAll(http.MaxBytesReader(rw, req.Body, a.maxBodySize))
 	if err != nil {
-		a.logger.Printf("fail to read incoming request: %s", err.Error())
-		http.Error(rw, "", http.StatusBadGateway)
+		if err.Error() == "http: request body too large" {
+			a.logger.Printf("body max limit reached: %s", err.Error())
+			http.Error(rw, "", http.StatusRequestEntityTooLarge)
+		} else {
+			a.logger.Printf("fail to read incoming request: %s", err.Error())
+			http.Error(rw, "", http.StatusBadGateway)
+		}
 		return
 	}
 
