@@ -40,6 +40,15 @@ If it is > 400, then the error page is returned instead.
 
 The *dummy* service is created so the waf container forward the request to a service and respond with 200 OK all the time.
 
+## Configuration
+
+This plugin supports these configuration:
+
+* `modSecurityUrl`: (**mandatory**) it's the URL for the owasp/modsecurity container.
+* `maxBodySize`: (optional) it's the maximum limit for requests body size. Requests exceeding this value will be rejected using `HTTP 413 Request Entity Too Large`.
+  The default value for this parameter is 10MB. Zero means "use default value".
+
+**Note**: body of every request will be buffered in memory while the request is in-flight (i.e.: during the security check and during the request processing by traefik and the backend), so you may want to tune `maxBodySize` depending on how much RAM you have.
 
 ## Local development (docker-compose.local.yml)
 
