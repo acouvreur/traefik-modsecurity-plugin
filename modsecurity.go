@@ -21,12 +21,17 @@ var httpClient = &http.Client{
 // Config the plugin configuration.
 type Config struct {
 	ModSecurityUrl string `json:"modSecurityUrl,omitempty"`
-	MaxBodySize    int64  `json:"maxBodySize,omitempty"`
+	MaxBodySize    int64  `json:"maxBodySize"`
 }
 
 // CreateConfig creates the default plugin configuration.
 func CreateConfig() *Config {
-	return &Config{}
+	return &Config{
+		// Safe default: if the max body size was not specified, use 10MB
+		// Note that this will break any file upload with files > 10MB. Hopefully
+		// the user will configure this parameter during the installation.
+		MaxBodySize: 10 * 1024 * 1024,
+	}
 }
 
 // Modsecurity a Modsecurity plugin.
@@ -44,15 +49,9 @@ func New(ctx context.Context, next http.Handler, config *Config, name string) (h
 		return nil, fmt.Errorf("modSecurityUrl cannot be empty")
 	}
 
-	// Safe default: if the max body size was not specified, use 10MB
-	// Note that this will break any file upload with files > 10MB. Hopefully
-	// the user will configure this parameter during the installation.
-	if config.MaxBodySize == 0 {
-		config.MaxBodySize = 10 * 1024 * 1024
-	}
-
 	return &Modsecurity{
 		modSecurityUrl: config.ModSecurityUrl,
+		maxBodySize:    config.MaxBodySize,
 		next:           next,
 		name:           name,
 		logger:         log.New(os.Stdout, "", log.LstdFlags),
