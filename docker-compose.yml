@@ -2,22 +2,19 @@ version: "3.7"
 
 services:
   traefik:
-    image: traefik
+    image: traefik:2.9.1
     ports:
       - "8000:80"
       - "8080:8080"
     command:
       - --api.dashboard=true
       - --api.insecure=true
-      - --pilot.token=$TRAEFIK_PILOT_TOKEN
       - --experimental.plugins.traefik-modsecurity-plugin.modulename=github.com/acouvreur/traefik-modsecurity-plugin
-      - --experimental.plugins.traefik-modsecurity-plugin.version=v1.0.1
+      - --experimental.plugins.traefik-modsecurity-plugin.version=v1.2.1
       - --providers.docker=true
       - --entrypoints.http.address=:80
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-    environment:
-      - TRAEFIK_PILOT_TOKEN
     labels:
       - traefik.enable=true
       - traefik.http.services.traefik.loadbalancer.server.port=8080
