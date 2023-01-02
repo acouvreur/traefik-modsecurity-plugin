@@ -13,13 +13,9 @@ import (
 	"time"
 )
 
-// Net client is a custom client to timeout after 2 seconds if the service is not ready
-var httpClient = &http.Client{
-	Timeout: time.Second * 2,
-}
-
 // Config the plugin configuration.
 type Config struct {
+	TimeoutMillis  int64  `json:"timeoutMillis"`
 	ModSecurityUrl string `json:"modSecurityUrl,omitempty"`
 	MaxBodySize    int64  `json:"maxBodySize"`
 }
@@ -27,6 +23,7 @@ type Config struct {
 // CreateConfig creates the default plugin configuration.
 func CreateConfig() *Config {
 	return &Config{
+		TimeoutMillis: 2000,
 		// Safe default: if the max body size was not specified, use 10MB
 		// Note that this will break any file upload with files > 10MB. Hopefully
 		// the user will configure this parameter during the installation.
@@ -40,6 +37,7 @@ type Modsecurity struct {
 	modSecurityUrl string
 	maxBodySize    int64
 	name           string
+	httpClient     *http.Client
 	logger         *log.Logger
 }
 
@@ -49,11 +47,20 @@ func New(ctx context.Context, next http.Handler, config *Config, name string) (h
 		return nil, fmt.Errorf("modSecurityUrl cannot be empty")
 	}
 
+	// Use a custom client with predefined timeout ot 2 seconds
+	var timeout time.Duration
+	if config.TimeoutMillis == 0 {
+		timeout = 2 * time.Second
+	} else {
+		timeout = time.Duration(config.TimeoutMillis) * time.Millisecond
+	}
+
 	return &Modsecurity{
 		modSecurityUrl: config.ModSecurityUrl,
 		maxBodySize:    config.MaxBodySize,
 		next:           next,
 		name:           name,
+		httpClient:     &http.Client{Timeout: timeout},
 		logger:         log.New(os.Stdout, "", log.LstdFlags),
 	}, nil
 }
@@ -101,7 +108,7 @@ func (a *Modsecurity) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		proxyReq.Header[h] = val
 	}
 
-	resp, err := httpClient.Do(proxyReq)
+	resp, err := a.httpClient.Do(proxyReq)
 	if err != nil {
 		a.logger.Printf("fail to send HTTP request to modsec: %s", err.Error())
 		http.Error(rw, "", http.StatusBadGateway)

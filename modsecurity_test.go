@@ -129,6 +129,7 @@ func TestModsecurity_ServeHTTP(t *testing.T) {
 				modSecurityUrl: modsecurityMockServer.URL,
 				maxBodySize:    1024,
 				name:           "modsecurity-middleware",
+				httpClient:     http.DefaultClient,
 				logger:         log.New(io.Discard, "", log.LstdFlags),
 			}
 
