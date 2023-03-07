@@ -4,7 +4,7 @@
 
 Traefik plugin to proxy requests to [owasp/modsecurity-crs](https://hub.docker.com/r/owasp/modsecurity-crs):apache
 
-![Github Actions](https://img.shields.io/github/workflow/status/acouvreur/traefik-modsecurity-plugin/Build?style=flat-square)
+![Github Actions](https://img.shields.io/github/actions/workflow/status/acouvreur/traefik-modsecurity-plugin/build.yml?style=flat-square&branch=main)
 ![Go Report](https://goreportcard.com/badge/github.com/acouvreur/traefik-modsecurity-plugin?style=flat-square)
 ![Go Version](https://img.shields.io/github/go-mod/go-version/acouvreur/traefik-modsecurity-plugin?style=flat-square)
 ![Latest Release](https://img.shields.io/github/release/acouvreur/traefik-modsecurity-plugin/all.svg?style=flat-square)
