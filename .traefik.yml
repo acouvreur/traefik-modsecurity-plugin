@@ -8,6 +8,7 @@ summary: 'Traefik plugin to proxy requests to owasp/modsecurity-crs:apache'
 testData:
   ModsecurityUrl: http://waf:80
   MaxBodySize: 10485760
+  TimeoutMillis: 2000
 
 iconPath: ./img/icon.png
 bannerPath: ./img/banner.png

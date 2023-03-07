@@ -45,6 +45,7 @@ The *dummy* service is created so the waf container forward the request to a ser
 This plugin supports these configuration:
 
 * `modSecurityUrl`: (**mandatory**) it's the URL for the owasp/modsecurity container.
+* `timeoutMillis`: (optional) timeout in milliseconds for the http client to talk with modsecurity container. (default 2 seconds)
 * `maxBodySize`: (optional) it's the maximum limit for requests body size. Requests exceeding this value will be rejected using `HTTP 413 Request Entity Too Large`.
   The default value for this parameter is 10MB. Zero means "use default value".
 
