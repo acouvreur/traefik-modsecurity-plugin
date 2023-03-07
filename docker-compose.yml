@@ -9,15 +9,12 @@ services:
     command:
       - --api.dashboard=true
       - --api.insecure=true
-      - --pilot.token=$TRAEFIK_PILOT_TOKEN
       - --experimental.plugins.traefik-modsecurity-plugin.modulename=github.com/acouvreur/traefik-modsecurity-plugin
       - --experimental.plugins.traefik-modsecurity-plugin.version=v1.0.1
       - --providers.docker=true
       - --entrypoints.http.address=:80
     volumes:
       - '/var/run/docker.sock:/var/run/docker.sock'
-    environment:
-      - TRAEFIK_PILOT_TOKEN
     labels:
       - traefik.enable=true
       - traefik.http.services.traefik.loadbalancer.server.port=8080
