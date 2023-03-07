@@ -10,7 +10,7 @@ services:
       - --api.dashboard=true
       - --api.insecure=true
       - --experimental.plugins.traefik-modsecurity-plugin.modulename=github.com/acouvreur/traefik-modsecurity-plugin
-      - --experimental.plugins.traefik-modsecurity-plugin.version=v1.0.1
+      - --experimental.plugins.traefik-modsecurity-plugin.version=v1.2.1
       - --providers.docker=true
       - --entrypoints.http.address=:80
     volumes:
