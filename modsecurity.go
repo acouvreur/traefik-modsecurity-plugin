@@ -22,7 +22,8 @@ type Config struct {
 	ModSecurityUrl string `json:"modSecurityUrl,omitempty"` // The URL of the ModSecurity server.
 	MaxBodySize    int64  `json:"maxBodySize"`              // Maximum allowed size of the request body.
 
-	CacheEnabled *bool `json:"cacheEnabled,omitempty"` // Enable or disable cache globally.
+	// Enable or disable cache globally.
+	CacheEnabled *bool `json:"cacheEnabled,omitempty"`
 
 	// CacheConditionsMethods specifies the HTTP methods for which caching is allowed.
 	CacheConditionsMethods []string `json:"cacheConditionsMethods,omitempty"`

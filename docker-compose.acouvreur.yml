@@ -36,10 +36,10 @@ services:
     image: containous/whoami
     labels:
       - traefik.enable=true
-      - traefik.http.routers.website-with-waf.rule=PathPrefix(`/testwaf`)
+      - traefik.http.routers.website-with-waf.rule=PathPrefix(`/website`)
       - traefik.http.routers.website-with-waf.middlewares=waf@docker
   website:
     image: containous/whoami
     labels:
       - traefik.enable=true
-      - traefik.http.routers.website.rule=PathPrefix(`/nowaf`)
+      - traefik.http.routers.website.rule=PathPrefix(`/website`)
