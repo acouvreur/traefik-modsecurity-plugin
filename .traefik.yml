@@ -1,14 +1,28 @@
-displayName: Modsecurity Plugin
+displayName: MxM OWASP CRS Modsecurity Plugin
 type: middleware
 
-import: github.com/acouvreur/traefik-modsecurity-plugin
+import: github.com/madebymode/traefik-modsecurity-plugin
 
-summary: 'Traefik plugin to proxy requests to owasp/modsecurity-crs:apache'
+summary: 'Traefik plugin to proxy requests through owasp/modsecurity-crs'
 
 testData:
   ModsecurityUrl: http://waf:80
   MaxBodySize: 10485760
   TimeoutMillis: 2000
+  CacheConditionsMethods:
+    - GET
+  CacheConditionsNoBody: true
+  CacheKeyIncludeMethod: true
+  CacheKeyIncludeRequestURI: true
+  CacheKeyIncludeHeaders: false
+  CacheKeyHeaders:
+    - Authorization
+    - User-Agent
+    - Cache-Control
+  CacheKeyMatchAllHeaders: false
+  CacheKeyIncludeHost: true
+  CacheKeyIncludeRemoteAddress: false
+
 
 iconPath: ./img/icon.png
 bannerPath: ./img/banner.png

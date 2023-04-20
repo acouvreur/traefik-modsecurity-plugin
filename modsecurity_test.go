@@ -1,13 +1,14 @@
-// Package traefik_modsecurity_plugin a modsecurity plugin.
 package traefik_modsecurity_plugin
 
 import (
 	"bytes"
+	"github.com/patrickmn/go-cache"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -92,7 +93,7 @@ func TestModsecurity_ServeHTTP(t *testing.T) {
 		{
 			name: "Reject too big payloads",
 			request: http.Request{
-				Body: generateLargeBody(1025),
+				Body: generateLargeBody(5025),
 			},
 			wafResponse: response{
 				StatusCode: 200,
@@ -112,6 +113,7 @@ func TestModsecurity_ServeHTTP(t *testing.T) {
 					StatusCode: tt.wafResponse.StatusCode,
 					Header:     http.Header{},
 				}
+				log.Printf("WAF Mock: status code: %d, body: %s", resp.StatusCode, tt.wafResponse.Body)
 				forwardResponse(&resp, w)
 			}))
 
@@ -121,6 +123,7 @@ func TestModsecurity_ServeHTTP(t *testing.T) {
 					StatusCode: tt.serviceResponse.StatusCode,
 					Header:     http.Header{},
 				}
+				log.Printf("Service Handler: status code: %d, body: %s", resp.StatusCode, tt.serviceResponse.Body)
 				forwardResponse(&resp, w)
 			})
 
@@ -131,14 +134,16 @@ func TestModsecurity_ServeHTTP(t *testing.T) {
 				name:           "modsecurity-middleware",
 				httpClient:     http.DefaultClient,
 				logger:         log.New(io.Discard, "", log.LstdFlags),
+				cache:          cache.New(5*time.Minute, 10*time.Minute),
 			}
 
 			rw := httptest.NewRecorder()
 
+			log.Printf("Before ServeHTTP: request method: %s, request URL: %s", tt.request.Method, tt.request.URL)
 			middleware.ServeHTTP(rw, &tt.request)
-
 			resp := rw.Result()
 			body, _ := io.ReadAll(resp.Body)
+			log.Printf("After ServeHTTP: response status code: %d, body: %s", resp.StatusCode, string(body))
 
 			assert.Equal(t, tt.expectBody, string(body))
 			assert.Equal(t, tt.expectStatus, resp.StatusCode)

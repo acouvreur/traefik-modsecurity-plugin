@@ -1,0 +1,45 @@
+version: "3.7"
+
+services:
+  traefik:
+    image: traefik
+    ports:
+      - "80:80"
+      - "8080:8080"
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --experimental.plugins.traefik-modsecurity-plugin.modulename=github.com/acouvreur/traefik-modsecurity-plugin
+      - --experimental.plugins.traefik-modsecurity-plugin.version=v1.3.0
+      - --providers.docker=true
+      - --entrypoints.http.address=:80
+    volumes:
+      - '/var/run/docker.sock:/var/run/docker.sock'
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.modSecurityUrl=http://waf:80
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.maxBodySize=10485760
+
+  waf:
+    image: owasp/modsecurity-crs:apache
+    environment:
+      - PARANOIA=1
+      - ANOMALY_INBOUND=10
+      - ANOMALY_OUTBOUND=5
+      - BACKEND=http://dummy
+
+  dummy:
+    image: containous/whoami
+
+  website-with-waf:
+    image: containous/whoami
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.website-with-waf.rule=PathPrefix(`/testwaf`)
+      - traefik.http.routers.website-with-waf.middlewares=waf@docker
+  website:
+    image: containous/whoami
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.website.rule=PathPrefix(`/nowaf`)

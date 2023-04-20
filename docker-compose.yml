@@ -4,13 +4,13 @@ services:
   traefik:
     image: traefik
     ports:
-      - "8000:80"
+      - "80:80"
       - "8080:8080"
     command:
       - --api.dashboard=true
       - --api.insecure=true
-      - --experimental.plugins.traefik-modsecurity-plugin.modulename=github.com/acouvreur/traefik-modsecurity-plugin
-      - --experimental.plugins.traefik-modsecurity-plugin.version=v1.3.0
+      - --experimental.plugins.traefik-modsecurity-plugin.modulename=github.com/madebymode/traefik-modsecurity-plugin
+      - --experimental.plugins.traefik-modsecurity-plugin.version=v1.0.0
       - --providers.docker=true
       - --entrypoints.http.address=:80
     volumes:
@@ -20,9 +20,19 @@ services:
       - traefik.http.services.traefik.loadbalancer.server.port=8080
       - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.modSecurityUrl=http://waf:80
       - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.maxBodySize=10485760
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.cacheEnabled=true
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.cacheConditionsMethods=["GET"]
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.cacheConditionsNoBody=true
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.cacheKeyIncludeMethod=true
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.cacheKeyIncludeHost=true
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.cacheKeyIncludeRequestURI=true
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.cacheKeyIncludeHeaders=false
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.cacheKeyHeaders=["Authorization", "User-Agent", "Cache-Control"]
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.cacheKeyMatchAllHeaders=false
+      - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.cacheKeyIncludeRemoteAddress=false
 
   waf:
-    image: owasp/modsecurity-crs:apache
+    image: owasp/modsecurity-crs:3.3.4-nginx-alpine-202303180303
     environment:
       - PARANOIA=1
       - ANOMALY_INBOUND=10
@@ -32,9 +42,14 @@ services:
   dummy:
     image: containous/whoami
 
+  website-with-waf:
+    image: containous/whoami
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.website-with-waf.rule=PathPrefix(`/website`)
+      - traefik.http.routers.website-with-waf.middlewares=waf@docker
   website:
     image: containous/whoami
     labels:
       - traefik.enable=true
-      - traefik.http.routers.website.rule=PathPrefix(`/website`)
-      - traefik.http.routers.website.middlewares=waf@docker
+      - traefik.http.routers.website.rule=PathPrefix(`/bypass`)

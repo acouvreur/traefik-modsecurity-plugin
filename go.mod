@@ -1,8 +1,11 @@
-module github.com/acouvreur/traefik-modsecurity-plugin
+module github.com/madebymode/traefik-modsecurity-plugin
 
 go 1.17
 
-require github.com/stretchr/testify v1.7.0
+require (
+	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/stretchr/testify v1.7.0
+)
 
 require (
 	github.com/davecgh/go-spew v1.1.0 // indirect
