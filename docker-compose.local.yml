@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   traefik:
-    image: traefik
+    image: traefik:3.0.1
     ports:
       - "8000:80"
       - "8080:8080"
@@ -22,7 +22,7 @@ services:
       - traefik.http.middlewares.waf.plugin.traefik-modsecurity-plugin.maxBodySize=10485760
 
   waf:
-    image: owasp/modsecurity-crs:apache
+    image: owasp/modsecurity-crs:4.2.0-apache-202405220605
     environment:
       - PARANOIA=1
       - ANOMALY_INBOUND=10
