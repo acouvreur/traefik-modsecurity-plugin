@@ -30,10 +30,10 @@ services:
       - BACKEND=http://dummy
 
   dummy:
-    image: containous/whoami
+    image: traefik/whoami
 
   website:
-    image: containous/whoami
+    image: traefik/whoami
     labels:
       - traefik.enable=true
       - traefik.http.routers.website.rule=PathPrefix(`/website`)
