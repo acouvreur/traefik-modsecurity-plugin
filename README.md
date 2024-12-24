@@ -24,7 +24,7 @@ Demo with WAF intercepting relative access in query param.
 
 ## Usage (docker-compose.yml)
 
-See [docker-compose.yml](docker-compose.yml)
+See [docker-compose.yml](https://github.com/acouvreur/traefik-modsecurity-plugin/blob/main/docker-compose.yml)
 
 1. docker-compose up
 2. Go to http://localhost:8000/website, the request is received without warnings
